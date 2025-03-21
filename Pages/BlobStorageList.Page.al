@@ -101,6 +101,54 @@ page 50100 "Blob Storage List"
                 end;
             }
 
+            action(DownloadBase64)
+            {
+                ApplicationArea = All;
+                Caption = 'Download File (Base64)';
+                Image = Export;
+                ToolTip = 'Download the selected file (Base64 content).';
+
+                trigger OnAction()
+                var
+                    InStream: InStream;
+                    OutStream: OutStream;
+                    TempBlob: Codeunit "Temp Blob";
+                    Base64Convert: Codeunit "Base64 Convert";
+                    FileName, FileExtension : Text;
+                    Base64Text: Text;
+                    OutPutOutStram: OutStream;
+                    OutputInStream: InStream;
+                begin
+                    Rec.CalcFields("File Content");
+                    if not Rec."File Content".HasValue then
+                        exit;
+
+                    Rec."File Content".CreateInStream(InStream);
+                    TempBlob.CreateOutStream(OutStream);
+                    CopyStream(OutStream, InStream);
+
+                    TempBlob.CreateInStream(InStream);
+                    InStream.ReadText(Base64Text);
+
+                    TempBlob.CreateOutStream(OutPutOutStram);
+                    Base64Convert.FromBase64(Base64Text, OutPutOutStram);
+
+
+
+                    FileName := Rec."File Name";
+                    FileExtension := Rec."File Extension";
+
+                    if (FileExtension <> '') and (not FileName.EndsWith('.' + FileExtension)) then
+                        FileName := FileName + '.' + FileExtension;
+
+                    TempBlob.CreateInStream(OutputInStream);
+
+                    CopyStream(OutPutOutStram, OutputInStream);
+
+                    DownloadFromStream(OutputinStream, '', '', '', FileName);
+                end;
+            }
+
         }
 
     }
