@@ -110,42 +110,47 @@ page 50100 "Blob Storage List"
 
                 trigger OnAction()
                 var
-                    InStream: InStream;
-                    OutStream: OutStream;
                     TempBlob: Codeunit "Temp Blob";
                     Base64Convert: Codeunit "Base64 Convert";
+                    InStream: InStream;
+                    OutStream: OutStream;
                     FileName, FileExtension : Text;
                     Base64Text: Text;
-                    OutPutOutStram: OutStream;
-                    OutputInStream: InStream;
+                    BinaryOutStream: OutStream;
                 begin
                     Rec.CalcFields("File Content");
                     if not Rec."File Content".HasValue then
                         exit;
 
+                    //Sæt instream som indholdet skal hentes fra filen.
                     Rec."File Content".CreateInStream(InStream);
+
+                    //Opret en outstream som indholdet skal kopieres til.
                     TempBlob.CreateOutStream(OutStream);
+
+                    //Kopier indholdet fra Rec."File Content" til TempBlob
                     CopyStream(OutStream, InStream);
 
+                    //Lav en forbindelse til TempBlob, hvor data kan læses fra
                     TempBlob.CreateInStream(InStream);
+
+                    //Læs indholdet fra TempBlob som Base64 tekst
                     InStream.ReadText(Base64Text);
 
-                    TempBlob.CreateOutStream(OutPutOutStram);
-                    Base64Convert.FromBase64(Base64Text, OutPutOutStram);
+                    //Opret en outstream som indholdet skal kopieres til.
+                    TempBlob.CreateOutStream(BinaryOutStream);
 
-
+                    //Konverter Base64 til binær data
+                    Base64Convert.FromBase64(Base64Text, BinaryOutStream);
 
                     FileName := Rec."File Name";
-                    FileExtension := Rec."File Extension";
+                    FileExtension := 'bmp';
 
                     if (FileExtension <> '') and (not FileName.EndsWith('.' + FileExtension)) then
-                        FileName := FileName + '.' + FileExtension;
+                        FileName := FileName + '.' + 'bmp';
 
-                    TempBlob.CreateInStream(OutputInStream);
 
-                    CopyStream(OutPutOutStram, OutputInStream);
-
-                    DownloadFromStream(OutputinStream, '', '', '', FileName);
+                    DownloadFromStream(InStream, '', '', '', FileName);
                 end;
             }
 
