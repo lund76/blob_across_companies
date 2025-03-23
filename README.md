@@ -1,6 +1,8 @@
 # Blob Across Companies
 
 A Business Central extension that enables file storage across companies using blob fields.
+It primarily serves to help better understand the misnomer that InStream and Outstream is in BC Blob management
+![alt text](image.png)
 
 ## Features
 
@@ -35,6 +37,46 @@ A Business Central extension that enables file storage across companies using bl
    - Click "Download" action
    - Choose save location on your device
 
+  ## New Feature: Base64 Blob Content Button
+
+  ### Overview
+
+  A new button has been added to the "Blob Storage List" page that allows users to view the base64 encoded content of the stored files.
+
+  ### How to Use
+
+  1. Open "Blob Storage List" page
+  2. To view base64 content:
+    - Select a file from the list
+    - Click "View Base64 Content" action
+    - A dialog will display the base64 encoded content of the selected file
+
+  ### Benefits
+
+  - Easily copy the base64 encoded content for use in other applications
+  - Quick access to file content without downloading
+
+  ### Technical Details
+
+  - Action: "View Base64 Content"
+    - Added to the "Blob Storage List" page
+    - Displays a dialog with the base64 encoded content of the selected file
+  - Utilizes AL code to convert blob content to base64 string
+
+  ### Example
+
+  ```al
+  trigger OnAction()
+  var
+     Base64Content: Text;
+  begin
+     if Rec.BlobField.HasValue then begin
+        Base64Content := Convert.ToBase64String(Rec.BlobField);
+        Message('Base64 Content: %1', Base64Content);
+     end else
+        Error('No content available.');
+  end;
+  ```
 ## Security
 
 - File content is stored with `CustomerContent` data classification
